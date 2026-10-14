@@ -41,6 +41,28 @@ services:
     networks:
       - microservices-net
 
+  course-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: course_db
+      POSTGRES_USER: course_user
+      POSTGRES_PASSWORD: course_password
+    volumes:
+      - ./course-catalogue/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - microservices-net
+
+  course-catalogue:
+    build: ./course-catalogue
+    ports:
+      - "5002:5002"
+    environment:
+      DATABASE_URL: postgresql://course_user:course_password@course-db:5432/course_db
+    depends_on:
+      - course-db
+    networks:
+      - microservices-net
+
 networks:
   microservices-net:
     driver: bridge

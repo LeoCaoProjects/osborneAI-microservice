@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS courses (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(20) UNIQUE NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT
+);
