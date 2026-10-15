@@ -1,0 +1,368 @@
+{
+  "info": {
+    "_postman_id": "a547ebd4-1ab0-49e7-9eee-b0cfacb52010",
+    "name": "INFS605 Assignment 2 UAT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58969549",
+    "_collection_link": "https://go.postman.co/collection/58969549-a547ebd4-1ab0-49e7-9eee-b0cfacb52010?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Student Profile (get student)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that the expected student was returned.\r\npm.test(\"Returns student 4\", function () {\r\n    pm.response.to.have.status(200);\r\n    pm.expect(pm.response.json().id).to.eql(4);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5001/students/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "students",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Course Catalogue (create course)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check the new course and save its ID for later requests.\r\npm.test(\"Course is created\", function () {\r\n    pm.response.to.have.status(201);\r\n\r\n    const course = pm.response.json();\r\n    pm.expect(course.code).to.include(\"UAT-\");\r\n    pm.expect(course.title).to.eql(\"Postman Test Course\");\r\n\r\n    pm.collectionVariables.set(\"courseId\", course.id);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"code\": \"UAT-{{$timestamp}}-{{$randomInt}}\",\r\n  \"title\": \"Postman Test Course\",\r\n  \"description\": \"Course created by the UAT collection\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5002/courses",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5002",
+          "path": [
+            "courses"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Course Catalogue (get course)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that the course created earlier is returned.\r\npm.test(\"Returns the created course\", function () {\r\n    pm.response.to.have.status(200);\r\n\r\n    const course = pm.response.json();\r\n    const savedCourseId = Number(pm.collectionVariables.get(\"courseId\"));\r\n\r\n    pm.expect(course.id).to.eql(savedCourseId);\r\n    pm.expect(course.code).to.include(\"UAT-\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5002/courses/{{courseId}}",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5002",
+          "path": [
+            "courses",
+            "{{courseId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Course Catalogue (list courses)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that the course created earlier appears in the list.\r\npm.test(\"Course list includes the created course\", function () {\r\n    pm.response.to.have.status(200);\r\n\r\n    const courses = pm.response.json();\r\n    const savedCourseId = Number(pm.collectionVariables.get(\"courseId\"));\r\n    const createdCourse = courses.find(function (course) {\r\n        return course.id === savedCourseId;\r\n    });\r\n\r\n    pm.expect(createdCourse).to.exist;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5002/courses",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5002",
+          "path": [
+            "courses"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Feedback (create feedback)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that feedback was saved and its notification was recorded.\r\npm.test(\"Feedback is created and notification is recorded\", function () {\r\n    pm.response.to.have.status(201);\r\n\r\n    const feedback = pm.response.json();\r\n    pm.expect(feedback.student_id).to.eql(4);\r\n    pm.expect(feedback.notification_recorded).to.eql(true);\r\n\r\n    pm.collectionVariables.set(\"feedbackId\", feedback.id);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"student_id\": 4,\r\n  \"course_id\": {{courseId}},\r\n  \"rating\": 5,\r\n  \"comment\": \"Postman UAT feedback\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5003/feedback",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5003",
+          "path": [
+            "feedback"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Feedback (list feedback)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that the feedback created earlier appears in the list.\r\npm.test(\"Feedback list includes the created feedback\", function () {\r\n    pm.response.to.have.status(200);\r\n\r\n    const feedbackItems = pm.response.json();\r\n    const savedFeedbackId = Number(pm.collectionVariables.get(\"feedbackId\"));\r\n    const createdFeedback = feedbackItems.find(function (item) {\r\n        return item.id === savedFeedbackId;\r\n    });\r\n\r\n    pm.expect(createdFeedback).to.exist;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5003/feedback",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5003",
+          "path": [
+            "feedback"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Feedback (reject invalid rating)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that an out of range rating is rejected.\r\npm.test(\"Invalid rating returns 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"student_id\": 4,\r\n  \"course_id\": {{courseId}},\r\n  \"rating\": 6,\r\n  \"comment\": \"Invalid rating test\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5003/feedback",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5003",
+          "path": [
+            "feedback"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Feedback (reject missing student)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that feedback for a missing student is rejected.\r\npm.test(\"Missing student returns 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"student_id\": 99999,\r\n  \"course_id\": {{courseId}},\r\n  \"rating\": 5,\r\n  \"comment\": \"Missing student test\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5003/feedback",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5003",
+          "path": [
+            "feedback"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notification (create notification)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that the notification was saved.\r\npm.test(\"Notification is created\", function () {\r\n    pm.response.to.have.status(201);\r\n\r\n    const notification = pm.response.json();\r\n    pm.expect(notification.feedback_id).to.eql(\r\n        Number(pm.collectionVariables.get(\"feedbackId\"))\r\n    );\r\n    pm.expect(notification.recipient).to.eql(\"wiremu.pita@example.com\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"feedback_id\": {{feedbackId}},\r\n  \"recipient\": \"wiremu.pita@example.com\",\r\n  \"message\": \"Direct Postman notification test\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5004/notifications",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5004",
+          "path": [
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notification (list notifications)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Check that Notification recorded the feedback event.\r\npm.test(\"Notification list includes the feedback notification\", function () {\r\n    pm.response.to.have.status(200);\r\n\r\n    const notifications = pm.response.json();\r\n    const savedFeedbackId = Number(pm.collectionVariables.get(\"feedbackId\"));\r\n    const feedbackNotification = notifications.find(function (item) {\r\n        return item.feedback_id === savedFeedbackId;\r\n    });\r\n\r\n    pm.expect(feedbackNotification).to.exist;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5004/notifications",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5004",
+          "path": [
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "courseId",
+      "value": ""
+    },
+    {
+      "key": "feedbackId",
+      "value": ""
+    }
+  ]
+}
