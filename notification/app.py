@@ -1,8 +1,8 @@
 import os
 
 import psycopg2
-from psycopg2.extras import RealDictCursor
 from flask import Flask, jsonify, request
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 
@@ -54,9 +54,9 @@ def create_notification():
         return jsonify({"error": "A JSON object is required"}), 400
 
     if "feedback_id" not in data or "recipient" not in data or "message" not in data:
-        return jsonify({
-            "error": "feedback_id, recipient, and message are required"
-        }), 400
+        return jsonify(
+            {"error": "feedback_id, recipient, and message are required"}
+        ), 400
 
     # Check that the feedback ID is a number
     try:

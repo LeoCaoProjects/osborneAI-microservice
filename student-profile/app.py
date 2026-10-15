@@ -29,12 +29,13 @@ Important notes for students
   attendance (JSONB or text storing JSON array).
 """
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS            # allows the React frontend to call this API
-import psycopg2                        # PostgreSQL client library
-import os
 import json
+import os
 import time
+
+import psycopg2  # PostgreSQL client library
+from flask import Flask, jsonify, request
+from flask_cors import CORS  # allows the React frontend to call this API
 
 app = Flask(__name__)
 CORS(app)  # permit Cross-Origin requests from the frontend during development
@@ -42,8 +43,7 @@ CORS(app)  # permit Cross-Origin requests from the frontend during development
 # DATABASE_URL read from environment so we can change DB location without changing code.
 # Default value is useful for Docker Compose; in production put a secure value in env.
 DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgres://studentuser:studentpass@student-db:5432/studentsdb"
+    "DATABASE_URL", "postgres://studentuser:studentpass@student-db:5432/studentsdb"
 )
 
 # -----------------------------
@@ -60,11 +60,14 @@ for i in range(max_retries):
         break
     except psycopg2.OperationalError:
         # If the connection failed, wait and try again.
-        print(f"DB connection failed ({i+1}/{max_retries}), retrying in 2s...")
+        print(f"DB connection failed ({i + 1}/{max_retries}), retrying in 2s...")
         time.sleep(2)
 else:
     # If we've retried max_retries times, raise an error and stop the service.
-    raise Exception(f"Could not connect to the database after {max_retries} retries")
+    raise ConnectionError(
+        f"Could not connect to the database after {max_retries} retries"
+    )
+
 
 def get_connection():
     """
@@ -144,8 +147,7 @@ def get_student(student_id):
 
     # Parameterized query: %s placeholders and tuple of values avoids SQL injection.
     cur.execute(
-        "SELECT id, name, email, attendance FROM students WHERE id=%s",
-        (student_id,)
+        "SELECT id, name, email, attendance FROM students WHERE id=%s", (student_id,)
     )
     row = cur.fetchone()
 
@@ -155,7 +157,12 @@ def get_student(student_id):
     if not row:
         return jsonify({"error": "Student not found"}), 404
 
-    student = {"id": row[0], "name": row[1], "email": row[2], "attendance": row[3] or []}
+    student = {
+        "id": row[0],
+        "name": row[1],
+        "email": row[2],
+        "attendance": row[3] or [],
+    }
     return jsonify(student), 200
 
 
@@ -186,7 +193,7 @@ def add_student():
     # Use parameterized INSERT to safely add the row; attendance starts as an empty JSON array.
     cur.execute(
         "INSERT INTO students (name, email, attendance) VALUES (%s, %s, %s) RETURNING id",
-        (data["name"], data["email"], json.dumps([]))
+        (data["name"], data["email"], json.dumps([])),
     )
     new_id = cur.fetchone()[0]
     conn.commit()
@@ -195,12 +202,9 @@ def add_student():
     conn.close()
 
     # Return the new resource with HTTP 201 "Created"
-    return jsonify({
-        "id": new_id,
-        "name": data["name"],
-        "email": data["email"],
-        "attendance": []
-    }), 201
+    return jsonify(
+        {"id": new_id, "name": data["name"], "email": data["email"], "attendance": []}
+    ), 201
 
 
 # -------------------------------------------
@@ -245,7 +249,7 @@ def update_student(student_id):
     # The SQL string includes placeholders for values and uses parameterized values tuple.
     cur.execute(
         f"UPDATE students SET {', '.join(fields)} WHERE id=%s RETURNING id, name, email, attendance",
-        tuple(values)
+        tuple(values),
     )
     row = cur.fetchone()
     conn.commit()
@@ -256,7 +260,9 @@ def update_student(student_id):
     if not row:
         return jsonify({"error": "Student not found"}), 404
 
-    return jsonify({"id": row[0], "name": row[1], "email": row[2], "attendance": row[3] or []}), 200
+    return jsonify(
+        {"id": row[0], "name": row[1], "email": row[2], "attendance": row[3] or []}
+    ), 200
 
 
 # -------------------------------------------
@@ -326,7 +332,10 @@ def record_attendance(student_id):
     attendance.append({"date": data["date"], "status": data["status"]})
 
     # Store the updated attendance array back in the DB (as JSON text)
-    cur.execute("UPDATE students SET attendance=%s WHERE id=%s", (json.dumps(attendance), student_id))
+    cur.execute(
+        "UPDATE students SET attendance=%s WHERE id=%s",
+        (json.dumps(attendance), student_id),
+    )
     conn.commit()
 
     cur.close()

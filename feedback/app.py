@@ -2,21 +2,15 @@ import os
 
 import psycopg2
 import requests
-from psycopg2.extras import RealDictCursor
 from flask import Flask, jsonify, request
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 
 # Use the other services compose names
-STUDENT_PROFILE_URL = os.getenv(
-    "STUDENT_PROFILE_URL", "http://student-profile:5001"
-)
-COURSE_CATALOGUE_URL = os.getenv(
-    "COURSE_CATALOGUE_URL", "http://course-catalogue:5002"
-)
-NOTIFICATION_URL = os.getenv(
-    "NOTIFICATION_URL", "http://notification:5004"
-)
+STUDENT_PROFILE_URL = os.getenv("STUDENT_PROFILE_URL", "http://student-profile:5001")
+COURSE_CATALOGUE_URL = os.getenv("COURSE_CATALOGUE_URL", "http://course-catalogue:5002")
+NOTIFICATION_URL = os.getenv("NOTIFICATION_URL", "http://notification:5004")
 
 
 def get_connection():
@@ -66,9 +60,9 @@ def create_feedback():
 
     required_fields = ("student_id", "course_id", "rating", "comment")
     if not all(field in data for field in required_fields):
-        return jsonify({
-            "error": "student_id, course_id, rating, and comment are required"
-        }), 400
+        return jsonify(
+            {"error": "student_id, course_id, rating, and comment are required"}
+        ), 400
 
     student_id = data["student_id"]
     course_id = data["course_id"]
