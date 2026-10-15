@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 def get_connection():
-    # Read the database address from the environment setting in Compose
+    # database settings from docker compose.
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 

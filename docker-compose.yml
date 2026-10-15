@@ -63,6 +63,28 @@ services:
     networks:
       - microservices-net
 
+  notification-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./notification/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - microservices-net
+
+  notification:
+    build: ./notification
+    depends_on:
+      - notification-db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@notification-db:5432/notification_db"
+    ports:
+      - "5004:5004"
+    networks:
+      - microservices-net
+
 networks:
   microservices-net:
     driver: bridge
