@@ -60,6 +60,8 @@ def create_notification():
 
     # Check that the feedback ID is a number
     try:
+        if isinstance(data["feedback_id"], float) and not data["feedback_id"].is_integer():
+            return jsonify({"error": "feedback_id must be an integer"}), 400
         feedback_id = int(data["feedback_id"])
     except (TypeError, ValueError):
         return jsonify({"error": "feedback_id must be a number"}), 400

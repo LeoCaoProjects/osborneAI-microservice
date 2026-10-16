@@ -30,6 +30,10 @@ def add_course():
     if not isinstance(data, dict):
         return jsonify({"error": "A JSON object is required"}), 400
 
+    for field in ("code", "title", "description"):
+        if not isinstance(data.get(field, ""), str):
+            return jsonify({"error": f"{field} must be a string"}), 400
+
     # Get the fields, removing spaces from the start and end
     code = data.get("code", "").strip()
     title = data.get("title", "").strip()

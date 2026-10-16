@@ -10,6 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN chmod +x wait-for-it.sh
 
-EXPOSE 5002
+EXPOSE 5003
 
 CMD ["./wait-for-it.sh", "feedback-db", "5432", "python", "app.py"]

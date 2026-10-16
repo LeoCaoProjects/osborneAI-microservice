@@ -164,11 +164,12 @@ I also tested what happens when Notification is unavailable. Feedback was saved 
 
 ```text
 assignment-repo/
-├── admin-frontend/
+├── frontend/
 ├── student-profile/
 ├── course-catalogue/
 ├── feedback/
 ├── notification/
+├── postgres/
 ├── postman/
 ├── screenshots/
 ├── docker-compose.yml
