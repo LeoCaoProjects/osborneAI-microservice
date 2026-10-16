@@ -20,19 +20,21 @@ Each backend service has its own PostgreSQL database. Feedback communicates with
 
 Each service owns its own data. Student Profile manages students and attendance, Course Catalogue manages courses, Feedback manages feedback, and Notification records notifications.
 
-Feedback uses HTTP to check that a student and course exist, then asks Notification to record a notification. If Notification is unavailable, Feedback still saves the feedback and returns `notification_recorded: false`. Notifications are recorded by the mock service. The project does not send real emails or retry failed notifications.
+Compose connects the containers on `microservices-net`. Feedback uses the Compose service names `student-profile`, `course-catalogue`, and `notification` to contact the other APIs. Each service accesses its own database.
+
+Feedback needs Student Profile and Course Catalogue to be available to check a submission. If Notification is unavailable, Feedback still saves the feedback and returns `notification_recorded: false`. Notification records a mock notification. It does not send real emails or retry failed notifications.
 
 ## Running locally
 
 Docker Desktop with Docker Compose is required. Postman is needed to run the test collection.
 
-Copy the example settings to a local `.env` file:
+Copy the example settings to `.env`:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Keep an existing `.env` file if you already have one. Do not include `.env` in the submission. The `.env.example` file is included as a template.
+The example values work for a fresh local setup. Change them in `.env` if needed.
 
 From the project folder, start the application:
 
@@ -154,6 +156,44 @@ Content-Type: application/json
 
 Use IDs that exist in the databases when sending requests directly. You can use the IDs returned by earlier requests.
 
+### Example responses
+
+Creating a student returns `201 Created`:
+
+```json
+{
+  "id": 34,
+  "name": "Test Student",
+  "email": "student@example.com",
+  "attendance": []
+}
+```
+
+Getting course 1 returns `200 OK`:
+
+```json
+{
+  "id": 1,
+  "code": "INFS605",
+  "title": "Microservices",
+  "description": "Course catalogue test"
+}
+```
+
+If Notification is unavailable, Feedback still saves the entry and returns `201 Created` with `notification_recorded: false`:
+
+```json
+{
+  "id": 4,
+  "student_id": 4,
+  "course_id": 1,
+  "rating": 5,
+  "comment": "Notification failure test",
+  "created_at": "Thu, 15 Oct 2026 09:14:36 GMT",
+  "notification_recorded": false
+}
+```
+
 ## Testing with Postman
 
 The collection is at `postman/INFS605 Assignment 2 UAT.postman_collection.json`.
@@ -168,13 +208,17 @@ The collection creates a course, submits feedback, checks notifications, and tes
 
 ![Postman UAT results](screenshots/postman-uat-results.png)
 
-I also stopped Notification and submitted feedback. Feedback was saved with `notification_recorded: false`. I then restarted Notification.
+Manual checks also covered Student Profile updates and attendance, invalid input, and what happens when Notification is unavailable. Feedback was saved with `notification_recorded: false`, and Notification was then restarted.
 
 *Figure 2. The Docker Compose services running.*
 
 ![Docker Compose services running](screenshots/docker-compose-running.png)
 
 I restarted the Course Catalogue database container and confirmed that the existing course was still available afterward.
+
+*Figure 3. Course data remained after a database restart, and Feedback saved while Notification was unavailable.*
+
+![Database persistence and Notification failure checks](screenshots/failure-and-persistence.png)
 
 ## Project structure
 

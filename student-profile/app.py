@@ -181,11 +181,16 @@ def add_student():
     Validates that 'name' and 'email' are provided.
     Inserts a new row and returns the created resource with its new id (HTTP 201).
     """
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required"}), 400
 
     # Basic validation for required fields.
-    if "name" not in data or "email" not in data:
-        return jsonify({"error": "name and email are required"}), 400
+    for field in ("name", "email"):
+        if not isinstance(data.get(field), str) or not data[field].strip():
+            return jsonify({"error": f"{field} must be a non-empty string"}), 400
+        data[field] = data[field].strip()
 
     conn = get_connection()
     cur = conn.cursor()
@@ -225,17 +230,24 @@ def update_student(student_id):
     Note: Be careful if you accept field names from users (not done here) — never
     insert raw user input into SQL fragments.
     """
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required"}), 400
+
     fields = []
     values = []
 
     # Collect only updated fields; these strings are static, values are parameterized.
     if "name" in data:
+        if not isinstance(data["name"], str) or not data["name"].strip():
+            return jsonify({"error": "name must be a non-empty string"}), 400
         fields.append("name=%s")
-        values.append(data["name"])
+        values.append(data["name"].strip())
     if "email" in data:
+        if not isinstance(data["email"], str) or not data["email"].strip():
+            return jsonify({"error": "email must be a non-empty string"}), 400
         fields.append("email=%s")
-        values.append(data["email"])
+        values.append(data["email"].strip())
 
     if not fields:
         return jsonify({"error": "No updatable fields provided"}), 400
@@ -311,10 +323,15 @@ def record_attendance(student_id):
     - For production, consider using a DB-side JSONB operation or a transaction
       with SELECT ... FOR UPDATE to ensure correctness under concurrency.
     """
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
 
-    if "date" not in data or "status" not in data:
-        return jsonify({"error": "date and status are required"}), 400
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required"}), 400
+
+    for field in ("date", "status"):
+        if not isinstance(data.get(field), str) or not data[field].strip():
+            return jsonify({"error": f"{field} must be a non-empty string"}), 400
+        data[field] = data[field].strip()
 
     conn = get_connection()
     cur = conn.cursor()
