@@ -191,6 +191,8 @@ def add_student():
         if not isinstance(data.get(field), str) or not data[field].strip():
             return jsonify({"error": f"{field} must be a non-empty string"}), 400
         data[field] = data[field].strip()
+        if len(data[field]) > 100:
+            return jsonify({"error": f"{field} must be at most 100 characters"}), 400
 
     conn = get_connection()
     cur = conn.cursor()
@@ -241,11 +243,15 @@ def update_student(student_id):
     if "name" in data:
         if not isinstance(data["name"], str) or not data["name"].strip():
             return jsonify({"error": "name must be a non-empty string"}), 400
+        if len(data["name"].strip()) > 100:
+            return jsonify({"error": "name must be at most 100 characters"}), 400
         fields.append("name=%s")
         values.append(data["name"].strip())
     if "email" in data:
         if not isinstance(data["email"], str) or not data["email"].strip():
             return jsonify({"error": "email must be a non-empty string"}), 400
+        if len(data["email"].strip()) > 100:
+            return jsonify({"error": "email must be at most 100 characters"}), 400
         fields.append("email=%s")
         values.append(data["email"].strip())
 
