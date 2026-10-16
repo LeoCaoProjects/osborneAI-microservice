@@ -16,9 +16,23 @@ Each backend service has its own PostgreSQL database. Feedback communicates with
 
 ![System architecture](screenshots/system-architecture.png)
 
+## Design notes
+
+Each service owns its own data. Student Profile manages students and attendance, Course Catalogue manages courses, Feedback manages feedback, and Notification records notifications.
+
+Feedback uses HTTP to check that a student and course exist, then asks Notification to record a notification. If Notification is unavailable, Feedback still saves the feedback and returns `notification_recorded: false`. Notifications are recorded by the mock service. The project does not send real emails or retry failed notifications.
+
 ## Running locally
 
 Docker Desktop with Docker Compose is required. Postman is needed to run the test collection.
+
+Copy the example settings to a local `.env` file:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Keep an existing `.env` file if you already have one. Do not include `.env` in the submission. The `.env.example` file is included as a template.
 
 From the project folder, start the application:
 
@@ -154,11 +168,13 @@ The collection creates a course, submits feedback, checks notifications, and tes
 
 ![Postman UAT results](screenshots/postman-uat-results.png)
 
-I also tested what happens when Notification is unavailable. Feedback was saved with `notification_recorded: false`. I then restarted Notification.
+I also stopped Notification and submitted feedback. Feedback was saved with `notification_recorded: false`. I then restarted Notification.
 
 *Figure 2. The Docker Compose services running.*
 
 ![Docker Compose services running](screenshots/docker-compose-running.png)
+
+I restarted the Course Catalogue database container and confirmed that the existing course was still available afterward.
 
 ## Project structure
 
@@ -172,6 +188,7 @@ assignment-repo/
 ├── postgres/
 ├── postman/
 ├── screenshots/
+├── .env.example
 ├── docker-compose.yml
 └── README.md
 ```
