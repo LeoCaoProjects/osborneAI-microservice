@@ -9,12 +9,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./services/student-profile/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservices-net
 
   student-profile:
-    build: ./student-profile
+    build: ./services/student-profile
     container_name: student-profile
     environment:
       DATABASE_URL: "postgresql://${STUDENT_DB_USER}:${STUDENT_DB_PASSWORD}@student-db:5432/${STUDENT_DB_NAME}"
@@ -48,12 +48,12 @@ services:
       POSTGRES_USER: ${COURSE_DB_USER}
       POSTGRES_PASSWORD: ${COURSE_DB_PASSWORD}
     volumes:
-      - ./course-catalogue/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./services/course-catalogue/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - microservices-net
 
   course-catalogue:
-    build: ./course-catalogue
+    build: ./services/course-catalogue
     ports:
       - "5002:5002"
     environment:
@@ -70,12 +70,12 @@ services:
       POSTGRES_USER: ${NOTIFICATION_DB_USER}
       POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
     volumes:
-      - ./notification/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./services/notification/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - microservices-net
 
   notification:
-    build: ./notification
+    build: ./services/notification
     depends_on:
       - notification-db
     environment:
@@ -92,12 +92,12 @@ services:
       POSTGRES_USER: ${FEEDBACK_DB_USER}
       POSTGRES_PASSWORD: ${FEEDBACK_DB_PASSWORD}
     volumes:
-      - ./feedback/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./services/feedback/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - microservices-net
 
   feedback:
-    build: ./feedback
+    build: ./services/feedback
     depends_on:
       - feedback-db
       - student-profile
